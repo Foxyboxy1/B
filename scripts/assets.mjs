@@ -1,0 +1,3 @@
+import {assets} from './seed.mjs';import {mkdir,writeFile,access} from 'node:fs/promises';
+await mkdir(new URL('../public/assets/',import.meta.url),{recursive:true});
+let failed=0;for(const file of assets){const dest=new URL('../public/assets/'+file,import.meta.url);try{await access(dest);continue}catch{}try{const r=await fetch('https://files.easy-orders.net/'+file,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('HTTP '+r.status);await writeFile(dest,Buffer.from(await r.arrayBuffer()))}catch{failed++;console.error('Asset unavailable: '+file)}}if(failed)process.exitCode=1;else console.log('All '+assets.length+' original brand images saved locally.');

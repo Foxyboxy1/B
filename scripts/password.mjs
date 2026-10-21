@@ -1,0 +1,2 @@
+import readline from 'node:readline';import {Writable} from 'node:stream';import {makeHash} from '../lib/core.mjs';
+const muted=new Writable({write(chunk,encoding,callback){callback()}});const rl=readline.createInterface({input:process.stdin,output:muted,terminal:true});process.stdout.write('New admin password (at least 14 characters, input hidden): ');rl.question('',p=>{rl.close();if(p.length<14){console.error('\nUse at least 14 characters.');process.exitCode=1}else console.log('\nADMIN_PASSWORD_HASH='+makeHash(p))});

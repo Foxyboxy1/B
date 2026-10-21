@@ -1,0 +1,20 @@
+{
+  "name": "b-accessories-store",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node dist/server.mjs",
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "build": "node scripts/build.mjs",
+    "db:init": "node --env-file-if-exists=.env scripts/init.mjs",
+    "admin:password": "node scripts/password.mjs",
+    "test": "node --test tests/store.test.mjs"
+  },
+  "dependencies": {
+    "mysql2": "3.24.5"
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.sqlite*
+*.db
+*.db-*
+*.log
+*.zip
+*.tar
+*.tar.gz
+coverage/
+.DS_Store
+Thumbs.db

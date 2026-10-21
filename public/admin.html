@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>B Studio — إدارة المتجر والعمليات</title>
+  <link rel="icon" href="/assets/1759340769821229036.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css?v=2.1.0">
+  <script src="/admin.js?v=2.1.0" defer></script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <section id="login" class="login">
+    <div class="login-art">
+      <div class="login-art-content">
+        <span class="art-b">B.</span>
+        <h2>THE LITTLE DETAILS.<br>THE BIG PICTURE.</h2>
+        <p>لوحة تحكم B Accessories المتكاملة لمتابعة الطلبات، المخزون، والتقارير.</p>
+        <div class="login-pill-badge">ADMIN CONTROL ROOM</div>
+      </div>
+    </div>
+
+    <div class="login-form-wrap">
+      <form id="loginForm" class="login-form">
+        <div class="studio-logo" dir="ltr">
+          B <span>STUDIO</span>
+        </div>
+        <p class="admin-eyebrow">WELCOME BACK</p>
+        <h1>كل التفاصيل،<br><i>في إيدك.</i></h1>
+        <p class="login-sub">سجّلي الدخول لإدارة ومتابعة طلبات متجر B.</p>
+
+        <label class="admin-input-group">
+          <span>البريد الإلكتروني للإدارة</span>
+          <input name="email" type="email" required autocomplete="username" placeholder="admin@example.com" dir="ltr">
+        </label>
+
+        <label class="admin-input-group">
+          <span>كلمة المرور</span>
+          <input name="password" type="password" required autocomplete="current-password" placeholder="••••••••••••" dir="ltr">
+        </label>
+
+        <p id="loginError" class="admin-error" role="alert"></p>
+
+        <button class="btn-primary-admin full-btn" type="submit">
+          <span>دخول لوحة التحكم</span>
+          <i>↗</i>
+        </button>
+
+        <a href="/" class="login-back-link">الرجوع للواجهة الرئيسية للمتجر</a>
+      </form>
+    </div>
+  </section>
+
+  <!-- Authenticated Application Workspace -->
+  <div id="app" hidden>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="studio-logo" href="/admin" dir="ltr">
+          B <span>STUDIO</span>
+        </a>
+        <p class="side-label">STORE OPERATIONS & ANALYTICS</p>
+      </div>
+
+      <nav id="navigation" class="sidebar-nav">
+        <button data-page="overview" class="nav-item active">
+          <span class="nav-icon">◫</span>
+          <span class="nav-text">نظرة عامة</span>
+        </button>
+        <button data-page="orders" class="nav-item">
+          <span class="nav-icon">▤</span>
+          <span class="nav-text">الطلبات والمبيعات</span>
+        </button>
+        <button data-page="products" class="nav-item">
+          <span class="nav-icon">◇</span>
+          <span class="nav-text">المنتجات والمخزون</span>
+        </button>
+        <button data-page="categories" class="nav-item">
+          <span class="nav-icon">⊞</span>
+          <span class="nav-text">الأقسام والتصنيفات</span>
+        </button>
+        <button data-page="coupons" class="nav-item">
+          <span class="nav-icon">⌁</span>
+          <span class="nav-text">أكواد الخصم</span>
+        </button>
+        <button data-page="reports" class="nav-item">
+          <span class="nav-icon">↗</span>
+          <span class="nav-text">التقارير والمصادر</span>
+        </button>
+        <button data-page="integrations" class="nav-item">
+          <span class="nav-icon">◎</span>
+          <span class="nav-text">ميتا وجوجل والتتبع</span>
+        </button>
+        <button data-page="settings" class="nav-item">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-text">إعدادات المتجر والشحن</span>
+        </button>
+      </nav>
+
+      <div class="side-footer">
+        <a href="/" target="_blank" rel="noopener" class="side-store-link">
+          <span>معاينة المتجر لايف</span>
+          <i>↗</i>
+        </a>
+        <button id="logout" class="side-logout-btn">تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <!-- Workspace Main Area -->
+    <div class="workspace">
+      <header class="admin-header">
+        <div>
+          <p class="admin-eyebrow">B ACCESSORIES / CONTROL ROOM</p>
+          <h1 id="pageTitle" class="admin-page-title">نظرة عامة</h1>
+        </div>
+        <div class="admin-user-pill">
+          <span id="environmentBadge" class="env-badge">LIVE STORE</span>
+          <b id="adminEmail" class="admin-email-text" dir="ltr"></b>
+        </div>
+      </header>
+
+      <main id="content" class="admin-content"></main>
+    </div>
+  </div>
+
+  <!-- Reusable Dialog Editor / Modal -->
+  <dialog id="editor" class="admin-dialog">
+    <div class="dialog-top">
+      <h2 id="editorTitle"></h2>
+      <button id="editorClose" class="admin-close-btn" aria-label="إغلاق">✕</button>
+    </div>
+    <div id="editorContent" class="dialog-body"></div>
+  </dialog>
+
+  <!-- Admin Toast Notification -->
+  <div id="toast" class="admin-toast" role="status"></div>
+</body>
+</html>
