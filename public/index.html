@@ -10,10 +10,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/store.css?v=2.1.0">
+  <link rel="stylesheet" href="/store.css?v=2.2.0">
   <link rel="stylesheet" href="/play.css">
-  <script src="/tracking.js?v=2.1.0" defer></script>
-  <script src="/store.js?v=2.1.0" defer></script>
+  <script src="/tracking.js?v=2.2.0" defer></script>
+  <script src="/store.js?v=2.2.0" defer></script>
   <script src="/play.js" defer></script>
 </head>
 <body>
@@ -668,6 +668,63 @@
       <p class="form-error-msg" id="trackError"></p>
     </form>
     <div id="trackResult" class="track-result-box"></div>
+  </dialog>
+
+  <!-- ✨ Virtual Try-On Modal -->
+  <dialog id="tryOnModal" class="tryon-modal" aria-labelledby="tryOnTitle">
+    <button class="modal-close-btn" data-close="tryOnModal" aria-label="إغلاق">✕</button>
+    <div class="tryon-header">
+      <p class="drawer-eyebrow">AI VIRTUAL TRY-ON ✨</p>
+      <h2 id="tryOnTitle">شوفي القطعة <i>عليكِ</i></h2>
+      <p class="tryon-sub">ارفعي صورتكِ والذكاء الاصطناعي هيريكِ شكل الإكسسوار عليكِ بالظبط.</p>
+    </div>
+
+    <div class="tryon-body">
+      <!-- المنتج المختار -->
+      <div class="tryon-product-preview" id="tryOnProductPreview"></div>
+
+      <!-- رفع الصورة -->
+      <div class="tryon-upload-zone" id="tryOnUploadZone">
+        <input type="file" id="tryOnFileInput" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="tryon-upload-placeholder" id="tryOnPlaceholder">
+          <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="24" cy="18" r="8"/>
+            <path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16"/>
+          </svg>
+          <p>اضغطي أو اسحبي صورتكِ هنا</p>
+          <span>JPG · PNG · WebP — حتى 10 ميجا</span>
+        </div>
+        <img id="tryOnPreviewImg" class="tryon-preview-img" hidden alt="صورتكِ">
+      </div>
+
+      <!-- زر التجربة -->
+      <button class="btn primary-dark full-btn" id="tryOnBtn" disabled>
+        <span id="tryOnBtnText">اختاري صورتكِ أولاً</span>
+        <i>✨</i>
+      </button>
+
+      <!-- حالة التحميل -->
+      <div class="tryon-loading" id="tryOnLoading" hidden>
+        <div class="tryon-spinner"></div>
+        <p>الذكاء الاصطناعي بيجهّز لكِ الصورة…</p>
+        <span>ده بياخد من 15 لـ 30 ثانية 🌸</span>
+      </div>
+
+      <!-- النتيجة -->
+      <div class="tryon-result" id="tryOnResult" hidden>
+        <p class="tryon-result-label">✨ شوفي كده جميلة عليكِ!</p>
+        <img id="tryOnResultImg" alt="نتيجة التجربة" class="tryon-result-img">
+        <div class="tryon-result-actions">
+          <a id="tryOnDownloadBtn" class="btn outline-pill" download="b-accessories-tryon.jpg">حمّلي الصورة</a>
+          <button class="btn primary-pill" id="tryOnAddToCart">أضيفيها للشنطة</button>
+        </div>
+      </div>
+
+      <!-- خطأ -->
+      <p class="form-error-msg" id="tryOnError" role="alert"></p>
+    </div>
+
+    <p class="tryon-disclaimer">صورتكِ تُستخدم فقط لإنتاج التجربة ولا تُحفظ على سيرفراتنا.</p>
   </dialog>
 
   <!-- Cookie Consent Banner -->

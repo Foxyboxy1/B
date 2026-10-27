@@ -2742,3 +2742,274 @@ dialog:not([open]) { display: none !important; }
 body:has(dialog[open]) { overflow: hidden; }
 dialog { overscroll-behavior: contain; }
 .look-item-card { min-width: 0; background: white; cursor: pointer; font-family: inherit; color: inherit; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Virtual Try-On Modal — B Accessories v2.2
+═══════════════════════════════════════════════════════════════ */
+.tryon-modal {
+  border: none;
+  border-radius: 24px;
+  padding: 0;
+  max-width: min(520px, 96vw);
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--paper);
+  box-shadow: var(--shadow-lg);
+  scroll-behavior: smooth;
+}
+
+.tryon-modal::backdrop {
+  background: rgba(28, 21, 25, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.tryon-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.tryon-header h2 {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  color: var(--ink);
+  margin: 0.25rem 0 0;
+}
+
+.tryon-header h2 i {
+  font-style: italic;
+  color: var(--hot);
+}
+
+.tryon-sub {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+.tryon-body {
+  padding: 1.5rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* معاينة المنتج المختار */
+.tryon-product-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--pink-light);
+  border-radius: 16px;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--pink);
+}
+
+.tryon-product-preview img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.tryon-product-preview .tryon-product-name {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tryon-product-preview .tryon-product-price {
+  font-size: 0.8rem;
+  color: var(--hot);
+  margin-top: 0.2rem;
+}
+
+/* منطقة رفع الصورة */
+.tryon-upload-zone {
+  border: 2px dashed var(--pink);
+  border-radius: 16px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--pink-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.tryon-upload-zone:hover,
+.tryon-upload-zone.dragover {
+  border-color: var(--hot);
+  background: var(--pink-subtle);
+}
+
+.tryon-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  padding: 2rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tryon-upload-placeholder p {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.tryon-upload-placeholder span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.tryon-preview-img {
+  width: 100%;
+  height: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+/* حالة التحميل */
+.tryon-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.tryon-loading p {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.tryon-loading span {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.tryon-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--pink);
+  border-top-color: var(--hot);
+  border-radius: 50%;
+  animation: tryon-spin 0.9s linear infinite;
+}
+
+@keyframes tryon-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* النتيجة */
+.tryon-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tryon-result-label {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--hot);
+  margin: 0;
+  text-align: center;
+}
+
+.tryon-result-img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+}
+
+.tryon-result-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.tryon-result-actions .btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* Try-On زر في صفحة المنتج */
+.tryon-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--pink-light);
+  color: var(--hot);
+  border: 1.5px solid var(--pink);
+  border-radius: 50px;
+  padding: 0.65rem 1.25rem;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.tryon-trigger-btn:hover {
+  background: var(--pink-subtle);
+  border-color: var(--hot);
+  transform: translateY(-1px);
+}
+
+.tryon-trigger-btn .tryon-sparkle {
+  font-size: 1rem;
+}
+
+.tryon-trigger-btn[hidden] {
+  display: none !important;
+}
+
+/* إخلاء المسؤولية */
+.tryon-disclaimer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0 2rem 1rem;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .tryon-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .tryon-header,
+  .tryon-body {
+    padding-inline: 1.25rem;
+  }
+}

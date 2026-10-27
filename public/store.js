@@ -1,4 +1,4 @@
-// B Accessories — Storefront Engine (v2.0)
+// B Accessories — Storefront Engine (v2.2)
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -268,6 +268,10 @@ function openProduct(id) {
           <button class="btn primary-dark" style="width: 100%; border-radius: var(--radius-full);" data-add="${esc(p.id)}" ${!p.stock ? 'disabled' : ''}>
             <span>${p.stock ? 'أضيفي للشنطة الآن' : 'غير متوفرة حالياً'}</span>
             <span>＋</span>
+          </button>
+          <button class="tryon-trigger-btn" data-product-id="${esc(p.id)}" title="جربي الإكسسوار عليكِ بالذكاء الاصطناعي">
+            <span class="tryon-sparkle">✨</span>
+            <span>جربي القطعة عليكِ — AI Try-On</span>
           </button>
           <button class="detail-wish-btn" data-detail-wish="${esc(p.id)}">
             ${isWished ? 'محفوظة في قائمة أمنياتك ♥' : 'احفظيها في المفضلة ♡'}
@@ -1022,6 +1026,8 @@ window.BStore = {
     });
 
     window.BStore.ready = true;
+    window.BStore.products = products; // للـ TryOn module
+    window.BStore.addToBag = (id) => add(id, false); // helper للـ TryOn
     window.dispatchEvent(new CustomEvent('bstore:ready'));
 
   } catch (err) {
@@ -1037,3 +1043,288 @@ window.BStore = {
     }
   }
 })();
+
+/* ═══════════════════════════════════════════════════════════════
+   ✨ Virtual Try-On Module — B Accessories v2.2
+   يُضاف على موديول المتجر الرئيسي
+═══════════════════════════════════════════════════════════════ */
+(function TryOnModule() {
+  // State
+  let tryOnEnabled = false;
+  let currentProduct = null;
+  let selectedFile = null;
+  let selectedBase64 = null;
+
+  // Elements
+  const modal = () => $('#tryOnModal');
+  const uploadZone = () => $('#tryOnUploadZone');
+  const fileInput = () => $('#tryOnFileInput');
+  const placeholder = () => $('#tryOnPlaceholder');
+  const previewImg = () => $('#tryOnPreviewImg');
+  const btn = () => $('#tryOnBtn');
+  const btnText = () => $('#tryOnBtnText');
+  const loadingEl = () => $('#tryOnLoading');
+  const resultEl = () => $('#tryOnResult');
+  const resultImg = () => $('#tryOnResultImg');
+  const errorEl = () => $('#tryOnError');
+  const downloadBtn = () => $('#tryOnDownloadBtn');
+  const addToCartBtn = () => $('#tryOnAddToCart');
+
+  // ── التحقق من تفعيل الميزة ────────────────────────────────────────────────
+  async function checkEnabled() {
+    try {
+      const r = await fetch('/api/try-on-status');
+      const data = await r.json();
+      tryOnEnabled = data.enabled === true;
+    } catch {
+      tryOnEnabled = false;
+    }
+  }
+
+  // ── تحويل File لـ base64 ─────────────────────────────────────────────────
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result.split(',')[1]); // بدون data: prefix
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ── تحديث الـ UI ──────────────────────────────────────────────────────────
+  function setError(msg) {
+    const el = errorEl();
+    if (el) { el.textContent = msg; el.hidden = !msg; }
+  }
+
+  function showLoading(show) {
+    const el = loadingEl();
+    if (el) el.hidden = !show;
+  }
+
+  function showResult(show) {
+    const el = resultEl();
+    if (el) el.hidden = !show;
+  }
+
+  function resetState() {
+    setError('');
+    showLoading(false);
+    showResult(false);
+    selectedFile = null;
+    selectedBase64 = null;
+
+    const pi = previewImg();
+    const ph = placeholder();
+    if (pi) pi.hidden = true;
+    if (ph) ph.hidden = false;
+
+    updateBtn();
+  }
+
+  function updateBtn() {
+    const b = btn();
+    const bt = btnText();
+    if (!b || !bt) return;
+    if (!selectedBase64) {
+      b.disabled = true;
+      bt.textContent = 'اختاري صورتكِ أولاً';
+    } else {
+      b.disabled = false;
+      bt.textContent = 'جربي القطعة عليكِ ✨';
+    }
+  }
+
+  // ── عرض معلومات المنتج في المودال ────────────────────────────────────────
+  function renderProductPreview(product) {
+    const container = $('#tryOnProductPreview');
+    if (!container || !product) return;
+
+    const imgSrc = product.images?.[0] || '';
+    container.innerHTML = `
+      <img src="${esc(imgSrc)}" alt="${esc(product.name)}" onerror="this.style.display='none'">
+      <div>
+        <div class="tryon-product-name">${esc(product.name)}</div>
+        <div class="tryon-product-price">${money(product.price)}</div>
+      </div>
+    `;
+  }
+
+  // ── معالجة اختيار الصورة ─────────────────────────────────────────────────
+  async function handleFile(file) {
+    if (!file) return;
+
+    // التحقق من الحجم (10 ميجا)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('الصورة كبيرة جداً — الحد الأقصى 10 ميجابايت');
+      return;
+    }
+
+    // التحقق من النوع
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('نوع الصورة غير مدعوم — ارفعي JPG أو PNG أو WebP');
+      return;
+    }
+
+    setError('');
+    selectedFile = file;
+
+    // عرض المعاينة
+    const url = URL.createObjectURL(file);
+    const pi = previewImg();
+    const ph = placeholder();
+    if (pi) { pi.src = url; pi.hidden = false; }
+    if (ph) ph.hidden = true;
+
+    // تحويل لـ base64
+    try {
+      selectedBase64 = await fileToBase64(file);
+      updateBtn();
+    } catch {
+      setError('فشل قراءة الصورة، جربي صورة تانية');
+    }
+  }
+
+  // ── استدعاء Try-On API ────────────────────────────────────────────────────
+  async function runTryOn() {
+    if (!currentProduct || !selectedBase64) return;
+
+    setError('');
+    showLoading(true);
+    showResult(false);
+    const b = btn();
+    if (b) b.disabled = true;
+
+    try {
+      const r = await fetch('/api/try-on', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: currentProduct.id,
+          image_base64: selectedBase64,
+          category: 'accessories',
+        }),
+      });
+
+      const data = await r.json();
+
+      if (!r.ok) {
+        setError(data.error || 'حصل خطأ، جربي مرة تانية');
+        showLoading(false);
+        if (b) b.disabled = false;
+        return;
+      }
+
+      // عرض النتيجة
+      showLoading(false);
+      showResult(true);
+
+      const ri = resultImg();
+      if (ri) ri.src = data.result_url;
+
+      // زر التحميل
+      const dl = downloadBtn();
+      if (dl) dl.href = data.result_url;
+
+      // scroll للنتيجة
+      setTimeout(() => resultEl()?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+
+    } catch (err) {
+      showLoading(false);
+      setError('مشكلة في الاتصال، تأكدي من الإنترنت وجربي تاني');
+      if (b) b.disabled = false;
+    }
+  }
+
+  // ── فتح المودال لمنتج معين ────────────────────────────────────────────────
+  function openForProduct(product) {
+    if (!tryOnEnabled) {
+      // لو مش مفعّل، نوضّح للمستخدم
+      alert('خاصية التجربة بالذكاء الاصطناعي غير متاحة حالياً.');
+      return;
+    }
+
+    currentProduct = product;
+    resetState();
+    renderProductPreview(product);
+
+    const m = modal();
+    if (m && !m.open) m.showModal();
+  }
+
+  // ── Event Listeners ───────────────────────────────────────────────────────
+  function initListeners() {
+    // فتح file picker عند الضغط على منطقة الرفع
+    document.addEventListener('click', e => {
+      const zone = e.target.closest('#tryOnUploadZone');
+      if (zone) fileInput()?.click();
+
+      // زر "جربي القطعة" في modal المنتج
+      const triggerBtn = e.target.closest('.tryon-trigger-btn');
+      if (triggerBtn) {
+        const pid = triggerBtn.dataset.productId;
+        const product = window.BStore?.products?.find(p => p.id === pid);
+        if (product) openForProduct(product);
+      }
+
+      // زر "أضيفيها للشنطة" بعد النتيجة
+      if (e.target.closest('#tryOnAddToCart') && currentProduct) {
+        // إضافة للسلة — نستدعي دالة المتجر لو موجودة
+        if (window.BStore?.addToBag) {
+          window.BStore.addToBag(currentProduct.id, 1);
+        }
+        modal()?.close();
+      }
+    });
+
+    // اختيار ملف
+    document.addEventListener('change', e => {
+      if (e.target.id === 'tryOnFileInput' && e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    // Drag & Drop
+    document.addEventListener('dragover', e => {
+      if (e.target.closest('#tryOnUploadZone')) {
+        e.preventDefault();
+        e.target.closest('#tryOnUploadZone').classList.add('dragover');
+      }
+    });
+
+    document.addEventListener('dragleave', e => {
+      if (e.target.closest('#tryOnUploadZone')) {
+        e.target.closest('#tryOnUploadZone').classList.remove('dragover');
+      }
+    });
+
+    document.addEventListener('drop', e => {
+      const zone = e.target.closest('#tryOnUploadZone');
+      if (zone) {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file);
+      }
+    });
+
+    // زر "جربي"
+    document.addEventListener('click', e => {
+      if (e.target.closest('#tryOnBtn')) runTryOn();
+    });
+
+    // إغلاق المودال
+    document.addEventListener('click', e => {
+      const closeBtn = e.target.closest('[data-close="tryOnModal"]');
+      if (closeBtn) modal()?.close();
+    });
+  }
+
+  // ── تصدير الـ API للمتجر ──────────────────────────────────────────────────
+  window.BTryOn = { open: openForProduct };
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  checkEnabled();
+  initListeners();
+
+})(); // end TryOnModule
